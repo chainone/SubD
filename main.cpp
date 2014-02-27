@@ -100,6 +100,7 @@ compute_shooter_file_hash(const char* file_path)
    }
    
    fclose(file_handle);
+   printf("Hash: %s\n", ret.c_str());
    return ret;
 }
 
