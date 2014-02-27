@@ -24,3 +24,9 @@ clang++ json-cpp/jsoncpp.o main.o -o subd -L/usr/local/lib/ -lcurl.4 -lboost_sys
 Usage:    
 subd $file1 $file2 ....    
 
+
+
+TODO:    
+1. compile on linux, windows, android and ios
+2. cmake
+3. support opensubtitles.org
