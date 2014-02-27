@@ -1,7 +1,4 @@
 //
-//  main.cpp
-//  CYSubDownloader
-//
 //  Created by ChenYong on 2/26/14.
 //  Copyright (c) 2014 ChenYong. All rights reserved.
 //
@@ -93,7 +90,7 @@ compute_shooter_file_hash(const char* file_path)
       if(result!=DIGEST_SAMPLE_BUF_LEN)
       {
          printf("Reading %s error!\n", file_path);
-         fclose(file_handle);
+				fclose(file_handle);
          return "";
       }
    
@@ -103,7 +100,6 @@ compute_shooter_file_hash(const char* file_path)
    }
    
    fclose(file_handle);
-   printf("Hash: %s\n", ret.c_str());
    return ret;
 }
 
@@ -134,8 +130,11 @@ struct SubQueryResult
 void
 SubQueryResult::print()
 {
+	 size_t size = link_results.size();
+	 printf("Got %d matched subtitles.\n", size);
+   return;
+
    printf("Query result:\n\tDelay:%d\n\tDescription:%s\n\tLinks:\n", delay, des.c_str());
-   size_t size = link_results.size();
    for (size_t i = 0 ; i < size ; i++)
    {
       printf("\t\t");
@@ -225,7 +224,7 @@ get_matched_sub_list(const char* file_path, SubQueryResults& results)
 
 
    QueryResponse query_response;
-   curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
+   //curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
    curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 15);
    curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, USER_AGENT);
    curl_easy_setopt(easyhandle, CURLOPT_URL, final_url.c_str());
@@ -279,7 +278,7 @@ receive_header(void *ptr, size_t size, size_t nmemb, void *userdata)
    std::string& file_name = file_name_struct.file_name;
    size_t size_in_bytes = size*nmemb;
    std::string headernamevalue((const char*)ptr, size_in_bytes);
-   
+  
    if(headernamevalue.find("Content-Disposition") != std::string::npos)
    {
       size_t pos = headernamevalue.find("filename=");
@@ -300,16 +299,22 @@ receive_header(void *ptr, size_t size, size_t nmemb, void *userdata)
 }
 
 static bool
-download_sub_file(const std::string& file_url, const std::string& orignal_media_file_path, const std::string& sub_ext, size_t index)
+download_sub_file(std::string& file_url, const std::string& orignal_media_file_path, const std::string& sub_ext, size_t index)
 {
+	//On linux, the md5 function used from opensll conficts with the create context inside the openssl
+	//Thus, to make it work, I have to force to use http
+	//
+	 file_url.replace(0, file_url.find_first_of(':'), "http");
    boost::filesystem::path origninal_media_path(orignal_media_file_path);
    std::string  default_sub_file_name = origninal_media_path.stem().string();
    default_sub_file_name.append(".");
    default_sub_file_name.append(sub_ext);
-   
+
+
    SubFileName final_file_name;
    final_file_name.id = index;
    
+
    std::string default_sub_file_full_path = (origninal_media_path.parent_path() /= default_sub_file_name).string();
    FILE* file = fopen(default_sub_file_full_path.c_str(), "w");
    
@@ -319,12 +324,10 @@ download_sub_file(const std::string& file_url, const std::string& orignal_media_
       return false;
    }
    
+
    CURL* easyhandle = curl_easy_init();
 
-   curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
-   curl_easy_setopt(easyhandle, CURLOPT_SSL_VERIFYHOST, 0);
-   curl_easy_setopt(easyhandle, CURLOPT_SSL_VERIFYPEER, 0);
-   //curl_easy_setopt(easyhandle, CURLOPT_HEADER, 1L);
+   //curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
    curl_easy_setopt(easyhandle, CURLOPT_HEADERFUNCTION, receive_header);
    curl_easy_setopt(easyhandle, CURLOPT_HEADERDATA, &final_file_name);
    curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 15);
@@ -361,22 +364,23 @@ download_sub_file(const std::string& file_url, const std::string& orignal_media_
 }
 
 static void
-download_sub_files(const SubQueryResult& result, const std::string& orignial_media_file_path, size_t& index)
+download_sub_files(SubQueryResult& result, const std::string& orignial_media_file_path, size_t& index)
 {
+	printf("download_sub_files");
    size_t size = result.link_results.size();
    if(size == 0)
       return;
    
    for (size_t i = 0; i < size; i++)
    {
-      const SubQueryLinkResult& lr = result.link_results[i];
+      SubQueryLinkResult& lr = result.link_results[i];
       download_sub_file(lr.link, orignial_media_file_path, lr.ext, index++);
    }
    
 }
 
 static void
-download_sub_files(const SubQueryResults& results, const std::string& orignial_media_file_path, int target = -1)
+download_sub_files(SubQueryResults& results, const std::string& orignial_media_file_path, int target = -1)
 {
    size_t result_size = results.size();
    if(result_size == 0)
@@ -387,7 +391,7 @@ download_sub_files(const SubQueryResults& results, const std::string& orignial_m
    {
       for (size_t i = 0; i < result_size; i++)
       {
-         const SubQueryResult& r = results[i];
+         SubQueryResult& r = results[i];
          download_sub_files(r, orignial_media_file_path, index);
       }
    }
