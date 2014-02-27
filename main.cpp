@@ -410,7 +410,7 @@ static void
 print_help()
 {
    printf("==A tiny tool to download subtitles from shooter==\n");
-   printf("usage: cysubdownloader $file1 $file2 ....\n");
+   printf("usage: subd $file1 $file2 ....\n");
 }
 
 int
