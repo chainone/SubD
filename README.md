@@ -27,6 +27,6 @@ subd $file1 $file2 ....
 
 
 TODO:    
-1. compile on linux, windows, android and ios
-2. cmake
-3. support opensubtitles.org
+1. compile on linux, windows, android and ios    
+2. cmake    
+3. support opensubtitles.org    
