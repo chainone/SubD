@@ -66,10 +66,10 @@ compute_shooter_file_hash(const char* file_path)
    }
    
    FILE* file_handle;
-   file_handle = fopen(file_path, "rb");
+   file_handle = fopen(file_path, "r");
    if(!file_handle)
    {
-      printf("Failed to open file: %s\n", file_path);
+      printf("Error: %d Failed to open file: %s\n", errno, file_path);
       return "";
    }
 
@@ -218,9 +218,12 @@ get_matched_sub_list(const char* file_path, SubQueryResults& results)
    std::string final_url = SHOOTER_API;
    final_url.append(query_string);
    
+	printf("Query url: %s\n", final_url.c_str());
+
+
    QueryResponse query_response;
 
-   //curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
+   curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
    curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 15);
    curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, USER_AGENT);
    curl_easy_setopt(easyhandle, CURLOPT_URL, final_url.c_str());
