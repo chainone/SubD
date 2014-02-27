@@ -17,6 +17,7 @@
 #include <boost/algorithm/string.hpp>
 #include <curl/curl.h>
 #include <json/json.h>
+#include <errno.h>
 
 #if defined(__APPLE__)
 #  define COMMON_DIGEST_FOR_OPENSSL
@@ -55,14 +56,9 @@ compute_shooter_file_hash(const char* file_path)
 {
    assert(file_path);
    
-   struct stat file_info;
-   if(stat(file_path, &file_info) == -1)
-   {
-      printf("Failed to get file info from: %s\n", file_path);
-      return "";
-   }
+   boost::filesystem::path path = file_path;
+   int64_t file_size = boost::filesystem::file_size(path);
    
-   int64_t file_size = file_info.st_size;
    if(file_size < 8*1024)
    {
       printf("File too small to compute the hash from file: %s\n", file_path);
@@ -432,6 +428,19 @@ main(int argc, const char * argv[])
    for (int i = 1; i < argc; i++)
    {
       prefered_path = argv[i];
+      
+      if ( !boost::filesystem::exists( prefered_path ) )
+      {
+         printf("not found: %s\n", prefered_path.c_str());
+         return 1;
+      }
+      
+      if ( !boost::filesystem::is_regular( prefered_path ) )
+      {
+         printf("not a regular file: %s\n", prefered_path.c_str());
+         return 1;
+      }
+      
       prefered_path_string = prefered_path.make_preferred().string();
       
       printf("Start query subtitles for %s\n", prefered_path_string.c_str());
