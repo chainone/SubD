@@ -130,11 +130,8 @@ struct SubQueryResult
 void
 SubQueryResult::print()
 {
-	 size_t size = link_results.size();
-	 printf("Got %d matched subtitles.\n", size);
-   return;
-
    printf("Query result:\n\tDelay:%d\n\tDescription:%s\n\tLinks:\n", delay, des.c_str());
+	 size_t size = link_results.size();
    for (size_t i = 0 ; i < size ; i++)
    {
       printf("\t\t");
@@ -147,6 +144,9 @@ typedef std::vector<SubQueryResult> SubQueryResults;
 void print(SubQueryResults& results)
 {
    size_t size = results.size();
+   printf("Retrieved %ld results from server\n", size);
+   return;
+   
    for (size_t i = 0 ; i < size ; i++)
    {
       printf("%ld ", i);
@@ -220,9 +220,6 @@ get_matched_sub_list(const char* file_path, SubQueryResults& results)
    std::string final_url = SHOOTER_API;
    final_url.append(query_string);
    
-	printf("Query url: %s\n", final_url.c_str());
-
-
    QueryResponse query_response;
    //curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
    curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 15);
@@ -458,7 +455,7 @@ main(int argc, const char * argv[])
       printf("Start query subtitles for %s\n", prefered_path_string.c_str());
       get_matched_sub_list(prefered_path_string.c_str(), results);
       print(results);
-      printf("\nStart to download subtitles....\n");
+      printf("Start to download subtitles....\n");
       
       download_sub_files(results, prefered_path_string);
       
