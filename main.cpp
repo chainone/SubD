@@ -18,6 +18,9 @@
 #include <curl/curl.h>
 #include <json/json.h>
 #include <errno.h>
+#include <stdio.h>
+
+
 
 #if defined(__APPLE__)
 #  define COMMON_DIGEST_FOR_OPENSSL
@@ -30,7 +33,7 @@
 #define DIGEST_SAMPLE_BUF_LEN 4*1024
 
 #define USER_AGENT "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36"
-#define SHOOTER_API "https://www.shooter.cn/api/subapi.php"
+#define SHOOTER_API "http://www.shooter.cn/api/subapi.php"
 
 
 std::string
@@ -222,7 +225,6 @@ get_matched_sub_list(const char* file_path, SubQueryResults& results)
 
 
    QueryResponse query_response;
-
    curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
    curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 15);
    curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, USER_AGENT);
@@ -319,7 +321,9 @@ download_sub_file(const std::string& file_url, const std::string& orignal_media_
    
    CURL* easyhandle = curl_easy_init();
 
-   //curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
+   curl_easy_setopt(easyhandle, CURLOPT_VERBOSE,1L);
+   curl_easy_setopt(easyhandle, CURLOPT_SSL_VERIFYHOST, 0);
+   curl_easy_setopt(easyhandle, CURLOPT_SSL_VERIFYPEER, 0);
    //curl_easy_setopt(easyhandle, CURLOPT_HEADER, 1L);
    curl_easy_setopt(easyhandle, CURLOPT_HEADERFUNCTION, receive_header);
    curl_easy_setopt(easyhandle, CURLOPT_HEADERDATA, &final_file_name);
