@@ -12,26 +12,15 @@ boost (libboost_filesystem, libboost_system)
 jsoncpp (included in source)      
 openssl (linux)      
 
-
-
 How to Build       
-Mac OSX:        
-git clone https://github.com/chainone/SubD.git    
-cd SubD     
-clang++ -c json-cpp/jsoncpp.cpp -Ijson-cpp    
-clang++ -c main.cpp -Ijson-cpp    
-clang++ json-cpp/jsoncpp.o main.o -o subd -L/usr/local/lib/ -lcurl.4 -lboost_system -lboost_filesystem    
+Mac OSX (10.9.1):        
+./osxinstall.sh    
 
-LINUX:    
-git clone https://github.com/chainone/SubD.git    
-cd SubD     
-g++ -c json-cpp/jsoncpp.cpp -Ijson-cpp    
-g++ -c main.cpp -Ijson-cpp -std=gnu++0x    
-g++ jsoncpp.o main.o -o subd -L/usr/local/lib/ -lcurl -lboost_system -lboost_filesystem    
+LINUX (12.04 i386 & 13.10 i386):    
+./linuxinstall.sh     
 
 Usage:    
 subd $file1 $file2 ....    
-
 
 
 TODO:    
