@@ -30,7 +30,13 @@
 #define DIGEST_SAMPLE_BUF_LEN 4*1024
 
 #define USER_AGENT "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36"
+
+
+#if defined(ENABLE_SSL)
+#define SHOOTER_API "https://www.shooter.cn/api/subapi.php"
+#else
 #define SHOOTER_API "http://www.shooter.cn/api/subapi.php"
+#endif
 
 
 std::string
@@ -201,6 +207,13 @@ from_json(const Json::Value& json_dict, SubQueryResult& result)
       assert(file_link_dict.isObject());
       temp.ext = file_link_dict["Ext"].asCString();
       temp.link = file_link_dict["Link"].asCString();
+      
+#if !defined(ENABLE_SSL)
+      //On linux, the md5 function used from openssl conficts with the create context inside the openssl
+      //Thus, to make it work, I have to force to use http
+      //
+      temp.link.replace(0, temp.link.find_first_of(':'), "http");
+#endif
       result.link_results.push_back(temp);
    }
 }
@@ -296,12 +309,8 @@ receive_header(void *ptr, size_t size, size_t nmemb, void *userdata)
 }
 
 static bool
-download_sub_file(std::string& file_url, const std::string& orignal_media_file_path, const std::string& sub_ext, size_t index)
+download_sub_file(const std::string& file_url, const std::string& orignal_media_file_path, const std::string& sub_ext, size_t index)
 {
-	//On linux, the md5 function used from opensll conficts with the create context inside the openssl
-	//Thus, to make it work, I have to force to use http
-	//
-	 file_url.replace(0, file_url.find_first_of(':'), "http");
    boost::filesystem::path origninal_media_path(orignal_media_file_path);
    std::string  default_sub_file_name = origninal_media_path.stem().string();
    default_sub_file_name.append(".");
@@ -361,23 +370,22 @@ download_sub_file(std::string& file_url, const std::string& orignal_media_file_p
 }
 
 static void
-download_sub_files(SubQueryResult& result, const std::string& orignial_media_file_path, size_t& index)
+download_sub_files(const SubQueryResult& result, const std::string& orignial_media_file_path, size_t& index)
 {
-	printf("download_sub_files");
    size_t size = result.link_results.size();
    if(size == 0)
       return;
    
    for (size_t i = 0; i < size; i++)
    {
-      SubQueryLinkResult& lr = result.link_results[i];
+      const SubQueryLinkResult& lr = result.link_results[i];
       download_sub_file(lr.link, orignial_media_file_path, lr.ext, index++);
    }
    
 }
 
 static void
-download_sub_files(SubQueryResults& results, const std::string& orignial_media_file_path, int target = -1)
+download_sub_files(const SubQueryResults& results, const std::string& orignial_media_file_path, int target = -1)
 {
    size_t result_size = results.size();
    if(result_size == 0)
@@ -388,7 +396,7 @@ download_sub_files(SubQueryResults& results, const std::string& orignial_media_f
    {
       for (size_t i = 0; i < result_size; i++)
       {
-         SubQueryResult& r = results[i];
+         const SubQueryResult& r = results[i];
          download_sub_files(r, orignial_media_file_path, index);
       }
    }
