@@ -1,10 +1,10 @@
-@@@@    
 SubD
 ====
 
-A tiny subtitle downloader
-
-
+A tiny subtitle downloader    
+一个从射手网下载字幕的命令行小工具    
+已经跟iambus的迅雷离线脚本集成: https://github.com/chainone/xunlei-lixian    
+在OSX上以及我的NAS上(ESXI + Ubuntu)常年服役    
 
 Dependencies:
 
